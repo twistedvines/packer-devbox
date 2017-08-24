@@ -1,0 +1,39 @@
+{
+  "variables": {
+    "memory": "512",
+    "cores": "1",
+    "ssh_username": "root",
+    "ssh_password": "password",
+    "ssh_wait_timeout": "1200s",
+    "shutdown_command": "shutdown now -P",
+    "headless": "false",
+    "vm_name": "devbox"
+  },
+
+  "builders": [
+
+    {
+      "type": "virtualbox-ovf",
+      "boot_command": [],
+      "source_path": "./ovf/arch-linux.ovf",
+      "vm_name": "{{ user `vm_name` }}",
+      "communicator": "ssh",
+      "ssh_username": "{{ user `ssh_username` }}",
+      "ssh_password": "{{ user `ssh_password` }}",
+      "ssh_wait_timeout": "{{ user `ssh_wait_timeout` }}",
+      "shutdown_command": "{{ user `shutdown_command` }}",
+      "headless": "{{ user `headless` }}",
+      "guest_additions_mode": "disable"
+    }
+  ],
+
+  "provisioners": [],
+
+  "post-processors": [
+    {
+      "type": "compress",
+      "compression_level": 4,
+      "output": "./build/dev-box.tar.gz"
+    }
+  ]
+}

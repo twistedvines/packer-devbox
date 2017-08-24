@@ -1,0 +1,3 @@
+[submodule "packer-archlinux"]
+	path = packer-archlinux
+	url = git@github.com:twistedvines/packer-archlinux.git
