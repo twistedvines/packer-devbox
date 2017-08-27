@@ -3,7 +3,7 @@
 # install sudo
 pacman -S --noconfirm sudo
 
-echo "%wheel      ALL=(ALL) ALL" | tee -a /etc/sudoers.d/wheel
+echo "%wheel      ALL=(ALL) ALL" | tee -a /etc/sudoers.d/wheel > /dev/null
 
 # add my user
 groupadd hobag
