@@ -6,7 +6,7 @@
     "ssh_password": "password",
     "ssh_wait_timeout": "1200s",
     "shutdown_command": "shutdown now -P",
-    "headless": "false",
+    "headless": "true",
     "vm_name": "devbox"
   },
 
@@ -27,7 +27,12 @@
     }
   ],
 
-  "provisioners": [],
+  "provisioners": [
+    {
+      "type": "shell",
+      "script": "./scripts/setup.sh"
+    }
+  ],
 
   "post-processors": [
     {
