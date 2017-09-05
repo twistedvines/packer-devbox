@@ -3,11 +3,14 @@
     "memory": "512",
     "cores": "1",
     "ssh_username": "root",
+    "primary_username": "hobag",
     "ssh_password": "password",
     "ssh_wait_timeout": "1200s",
     "shutdown_command": "shutdown now -P",
     "headless": "true",
-    "vm_name": "devbox"
+    "vm_name": "devbox",
+    "memory": "4096",
+    "cores": "2"
   },
 
   "builders": [
@@ -23,22 +26,54 @@
       "ssh_wait_timeout": "{{ user `ssh_wait_timeout` }}",
       "shutdown_command": "{{ user `shutdown_command` }}",
       "headless": "{{ user `headless` }}",
-      "guest_additions_mode": "disable"
+      "guest_additions_mode": "disable",
+      "vboxmanage": [
+        ["modifyvm", "{{.Name}}", "--memory", "4096"],
+        ["modifyvm", "{{.Name}}", "--cpus", "2"],
+        ["modifyvm", "{{.Name}}", "--vram", "92"]
+      ]
     }
   ],
 
   "provisioners": [
     {
       "type": "shell",
+      "script": "./scripts/install.sh"
+    },
+    {
+      "type": "shell",
       "script": "./scripts/setup.sh"
+    },
+    {
+      "type": "file",
+      "source": "./files/.xinitrc",
+      "destination": "/home/{{ user `primary_username` }}/.xinitrc"
+    },
+    {
+      "type": "file",
+      "source": "./files/i3-config",
+      "destination": "/home/{{ user `primary_username` }}/.config/i3/config"
+    },
+    {
+      "type": "shell",
+      "inline": "chown -R {{ user `primary_username` }}: /home/{{ user `primary_username` }}"
+    },
+    {
+      "type": "shell-local",
+      "command": "VBoxManage setextradata {{ user `vm_name` }} CustomVideoMode1 2560x1440x24"
+    },
+    {
+      "type": "shell-local",
+      "command": "VBoxManage setextradata {{ user `vm_name` }} CustomVideoMode2 1920x1080x24"
     }
+
   ],
 
   "post-processors": [
     {
       "type": "compress",
       "compression_level": 4,
-      "output": "./build/dev-box.tar.gz"
+      "output": "./build/{{ user `vm_name` }}.tar.gz"
     }
   ]
 }
