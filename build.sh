@@ -59,6 +59,11 @@ tidy_up() {
   rm "${project_dir}"/ovf/*
 }
 
+shortcut_tidy_up() {
+  local project_dir="$(get_project_dir)"
+  rm "${project_dir}"/ovf/*
+}
+
 echo 'initialising base image repository...'
 initialise_base_image_submodule
 exec 5>&1
@@ -72,4 +77,4 @@ echo 'building dev box...'
 build_image "$BUILD_JSON" >(cat - >&5)
 exec 5<&-
 echo 'tidying up...'
-tidy_up
+shortcut_tidy_up

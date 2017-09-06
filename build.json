@@ -38,11 +38,12 @@
   "provisioners": [
     {
       "type": "shell",
-      "script": "./scripts/install.sh"
+      "script": "./scripts/system_install.sh"
     },
     {
       "type": "shell",
-      "script": "./scripts/setup.sh"
+      "script": "./scripts/setup.sh",
+      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} {{ .Path }} {{ user `primary_username` }}"
     },
     {
       "type": "file",
@@ -58,6 +59,17 @@
       "type": "shell",
       "inline": "chown -R {{ user `primary_username` }}: /home/{{ user `primary_username` }}"
     },
+    {
+      "type": "shell",
+      "script": "./scripts/user_install.sh",
+      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} {{ .Path }} {{ user `primary_username` }}"
+    },
+    {
+      "type": "shell",
+      "script": "./scripts/tidy_up.sh",
+      "execute_command": "chmod +x {{ .Path }}; {{ .Vars }} {{ .Path }} {{ user `primary_username` }}"
+    },
+
     {
       "type": "shell-local",
       "command": "VBoxManage setextradata {{ user `vm_name` }} CustomVideoMode1 2560x1440x24"
