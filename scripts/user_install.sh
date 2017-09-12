@@ -2,6 +2,8 @@
 
 # this script is for installing additional user-specific extras.
 
+set -e
+
 install_window_manager() {
   pacman -S --noconfirm i3
 }
