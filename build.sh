@@ -1,5 +1,23 @@
 #!/bin/bash
 
+# params
+
+get_opts() {
+  while getopts 't:' opt; do
+    case "$opt" in
+      t)
+        VAGRANT_TARGET="$OPTARG"
+        ;;
+      \?)
+        echo "Invalid option: -$OPTARG" >&2
+        ;;
+      :)
+        echo "Option -$OPTARG requires an argument." >&2
+        ;;
+    esac
+  done
+}
+
 get_project_dir() {
   local filepath="$(dirname $0)"
   cd $filepath
@@ -55,15 +73,28 @@ build_image() {
 
 tidy_up() {
   local project_dir="$(get_project_dir)"
-  rm "${project_dir}"/packer-archlinux/build/*
-  rm "${project_dir}"/ovf/*
+  [ -n "$(ls "${project_dir}"/packer-archlinux/build/*)" ] && \
+    rm "${project_dir}"/packer-archlinux/build/*
+  [ -n "$(ls "${project_dir}/ovf")" ] && rm "${project_dir}"/ovf/*
 }
 
-shortcut_tidy_up() {
+add_vagrant_box() {
+  local target_vagrant_project_path="$1"
   local project_dir="$(get_project_dir)"
-  rm "${project_dir}"/ovf/*
+  local boxfile="$(ls -l "${project_dir}"/build/*.box | head -n 1 | awk '{print $9}')"
+  vagrant box add "${boxfile}" --name "arch-linux-devbox" --force
+  if [ -d "$target_vagrant_project_path" ]; then
+    [ -f "${target_vagrant_project_path}/Vagrantfile" ] && \
+      rm "$target_vagrant_project_path/Vagrantfile"
+    [ -d "$target_vagrant_project_path}/.vagrant" ] && \
+      rm -r "$target_vagrant_project_path/.vagrant"
+  else
+    mkdir -p "$target_vagrant_project_path"
+  fi
+  cd "$target_vagrant_project_path" && vagrant init arch-linux-devbox > /dev/null
 }
 
+get_opts "$@"
 echo 'initialising base image repository...'
 initialise_base_image_submodule
 exec 5>&1
@@ -77,4 +108,8 @@ echo 'building dev box...'
 build_image "$BUILD_JSON" >(cat - >&5)
 exec 5<&-
 echo 'tidying up...'
-shortcut_tidy_up
+tidy_up
+if [ -n "$VAGRANT_TARGET" ]; then
+  echo 'adding vagrant box...'
+  add_vagrant_box "$HOME/dev/vagrant/twistedvines/arch-devbox"
+fi
