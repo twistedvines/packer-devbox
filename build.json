@@ -8,7 +8,7 @@
     "ssh_wait_timeout": "1200s",
     "shutdown_command": "shutdown now -P",
     "headless": "true",
-    "vm_name": "devbox",
+    "vm_name": "arch-linux-devbox-build",
     "memory": "4096",
     "cores": "2"
   },
@@ -78,7 +78,6 @@
       "type": "shell-local",
       "command": "VBoxManage setextradata {{ user `vm_name` }} CustomVideoMode2 1920x1080x24"
     }
-
   ],
 
   "post-processors": [
