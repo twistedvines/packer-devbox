@@ -10,7 +10,8 @@
     "headless": "true",
     "vm_name": "arch-linux-devbox-build",
     "memory": "4096",
-    "cores": "2"
+    "cores": "2",
+    "base_image_name": "base_image_name"
   },
 
   "builders": [
@@ -18,7 +19,7 @@
     {
       "type": "virtualbox-ovf",
       "boot_command": [],
-      "source_path": "./ovf/arch-linux.ovf",
+      "source_path": "./ovf/{{ user `base_image_name` }}",
       "vm_name": "{{ user `vm_name` }}",
       "communicator": "ssh",
       "ssh_username": "{{ user `ssh_username` }}",

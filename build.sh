@@ -48,22 +48,47 @@ build_base_image() {
     grep 'root password for new build is' | \
     awk 'NF>1{print $NF}' | \
     xargs -0 printf "%s"
-    )"
+  )"
+
+  local tarball_path="$(echo "$output" | \
+    awk -F',' '{print $5}' | \
+    grep 'compressed artifacts in:' | \
+    awk 'NF>1{print $NF}' | \
+    sed "s=\.\/=$(pwd)\/=" | \
+    xargs -0 printf "%s"
+  )"
+
+  local base_image_name="$(echo "$output" | \
+    awk -F',' '{print $5}' | \
+    grep -oe "Executing: export [a-zA-Z0-9\-]*" | \
+    awk 'NF>1 {print $NF}'
+  ).ovf"
 
   cd "$project_dir"
 
-  echo "$password"
+  echo "{\"password\": \"${password}\",
+  \"tarball_path\": \"${tarball_path}\",
+  \"base_image_name\": \"${base_image_name}\"}"
 }
 
 extract_base_image() {
   local project_dir="$(get_project_dir)"
-  tar -xf "${project_dir}/packer-archlinux/build/arch-linux.tar.gz" \
+  local tarball_path="$1"
+  tar -xf "$tarball_path" \
     -C "${project_dir}/ovf/"
 }
 
 generate_dynamic_build_json() {
-  local password="$(echo "$1" | sed 's/\//\\\//g')"
-  sed "s/\"password\"/\"$password\"/g" "$(get_project_dir)/build.json"
+  local properties_json="$1"
+  local project_dir="$(get_project_dir)"
+  local property_keys=$(echo "$properties_json" | jq -r 'keys[]')
+  local sed_command=''
+  for property_key in ${property_keys}; do
+    local value="$(echo "$properties_json" | jq -r ".[\"$property_key\"]")"
+    sed_command="$sed_command s=: \"$property_key\"=: \"$value\"=g;"
+  done
+
+  sed "$sed_command" "${project_dir}/build.json"
 }
 
 build_image() {
@@ -99,11 +124,12 @@ echo 'initialising base image repository...'
 initialise_base_image_submodule
 exec 5>&1
 echo 'building base image...'
-PASSWORD="$(build_base_image | tee >(cat - >&5))"
+BASE_BUILD_PROPERTIES="$(build_base_image | tee >(cat - >&5))"
+BASE_BUILD_PROPERTIES="$(echo "$BASE_BUILD_PROPERTIES" | jq '.')"
 echo 'extracting base image...'
-extract_base_image
+extract_base_image "$(echo "$BASE_BUILD_PROPERTIES" | jq -r '.["tarball_path"]')"
 echo 'building build json...'
-BUILD_JSON="$(generate_dynamic_build_json $PASSWORD)"
+BUILD_JSON="$(generate_dynamic_build_json "$BASE_BUILD_PROPERTIES")"
 echo 'building dev box...'
 build_image "$BUILD_JSON" >(cat - >&5)
 exec 5<&-
