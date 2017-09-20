@@ -1,5 +1,7 @@
 #!/bin/bash
 
+trap tidy_up EXIT
+
 # params
 
 get_opts() {
