@@ -100,9 +100,8 @@ build_image() {
 
 tidy_up() {
   local project_dir="$(get_project_dir)"
-  [ -n "$(ls "${project_dir}"/packer-archlinux/build/*)" ] && \
-    rm "${project_dir}"/packer-archlinux/build/*
-  [ -n "$(ls "${project_dir}/ovf")" ] && rm "${project_dir}"/ovf/*
+  rm "${project_dir}"/packer-archlinux/build/* 2> /dev/null
+  rm "${project_dir}"/ovf/* 2> /dev/null
 }
 
 add_vagrant_box() {
