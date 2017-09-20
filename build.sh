@@ -5,10 +5,13 @@ trap tidy_up EXIT
 # params
 
 get_opts() {
-  while getopts 't:' opt; do
+  while getopts 't:s' opt; do
     case "$opt" in
       t)
         VAGRANT_TARGET="$OPTARG"
+        ;;
+      s)
+        SPIN_UP=true
         ;;
       \?)
         echo "Invalid option: -$OPTARG" >&2
@@ -117,7 +120,14 @@ add_vagrant_box() {
   else
     mkdir -p "$target_vagrant_project_path"
   fi
-  cd "$target_vagrant_project_path" && vagrant init arch-linux-devbox > /dev/null
+  cd "$target_vagrant_project_path" && \
+    vagrant init arch-linux-devbox > /dev/null
+}
+
+spin_up_vagrant_box() {
+  local target_vagrant_project_path="$1"
+  cd "$target_vagrant_project_path"
+  vagrant destroy -f && vagrant up
 }
 
 get_opts "$@"
@@ -134,9 +144,14 @@ BUILD_JSON="$(generate_dynamic_build_json "$BASE_BUILD_PROPERTIES")"
 echo 'building dev box...'
 build_image "$BUILD_JSON" >(cat - >&5)
 exec 5<&-
-echo 'tidying up...'
-tidy_up
 if [ -n "$VAGRANT_TARGET" ]; then
   echo 'adding vagrant box...'
   add_vagrant_box "$HOME/dev/vagrant/twistedvines/arch-devbox"
+
+  if [ -n "$SPIN_UP" ]; then
+    echo 'spinning-up newly created vagrant box...'
+    spin_up_vagrant_box "$VAGRANT_TARGET"
+  fi
 fi
+echo 'tidying up...'
+tidy_up
