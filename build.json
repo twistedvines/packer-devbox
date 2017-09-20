@@ -47,6 +47,11 @@
     },
     {
       "type": "file",
+      "source": "./files/.bash_profile",
+      "destination": "/home/hobag/.bash_profile"
+    },
+    {
+      "type": "file",
       "source": "./files/.xinitrc",
       "destination": "/home/{{ user `primary_username` }}/.xinitrc"
     },
@@ -54,6 +59,15 @@
       "type": "file",
       "source": "./files/i3-config",
       "destination": "/home/{{ user `primary_username` }}/.config/i3/config"
+    },
+    {
+      "type": "shell",
+      "inline": "mkdir -p /etc/systemd/system/getty@tty1.service.d"
+    },
+    {
+      "type": "file",
+      "source": "./files/autologin-systemd-service.conf",
+      "destination": "/etc/systemd/system/getty@tty1.service.d/override.conf"
     },
     {
       "type": "shell",
