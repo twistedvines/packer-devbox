@@ -146,7 +146,7 @@ build_image "$BUILD_JSON" >(cat - >&5)
 exec 5<&-
 if [ -n "$VAGRANT_TARGET" ]; then
   echo 'adding vagrant box...'
-  add_vagrant_box "$HOME/dev/vagrant/twistedvines/arch-devbox"
+  add_vagrant_box "$VAGRANT_TARGET"
 
   if [ -n "$SPIN_UP" ]; then
     echo 'spinning-up newly created vagrant box...'
