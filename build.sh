@@ -29,16 +29,9 @@ get_project_dir() {
   pwd
 }
 
-initialise_base_image_submodule() {
+initialise_submodules() {
   cd "$(get_project_dir)"
-  local submodule_status="$(git submodule status \
-    | grep packer-archlinux \
-    | head -c1
-  )"
-  if [ -z "$submodule_status" ]; then
-    git submodule init && git submodule update
-  fi
-  git submodule update --remote
+  git submodule update --init --recursive --remote --rebase
 }
 
 build_base_image() {
@@ -131,8 +124,8 @@ spin_up_vagrant_box() {
 }
 
 get_opts "$@"
-echo 'initialising base image repository...'
-initialise_base_image_submodule
+echo 'initialising submodules...'
+initialise_submodules
 exec 5>&1
 echo 'building base image...'
 BASE_BUILD_PROPERTIES="$(build_base_image | tee >(cat - >&5))"
