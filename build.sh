@@ -64,7 +64,7 @@ build_base_image() {
 
   cd "$project_dir"
 
-  echo "{\"password\": \"${password}\",
+  echo "{\"ssh_password\": \"${password}\",
   \"tarball_path\": \"${tarball_path}\",
   \"base_image_name\": \"${base_image_name}\"}"
 }
@@ -77,16 +77,10 @@ extract_base_image() {
 }
 
 generate_dynamic_build_json() {
-  local properties_json="$1"
   local project_dir="$(get_project_dir)"
-  local property_keys=$(echo "$properties_json" | jq -r 'keys[]')
-  local sed_command=''
-  for property_key in ${property_keys}; do
-    local value="$(echo "$properties_json" | jq -r ".[\"$property_key\"]")"
-    sed_command="$sed_command s=: \"$property_key\"=: \"$value\"=g;"
-  done
-
-  sed "$sed_command" "${project_dir}/build.json"
+  local build_json="$(cat "${project_dir}/build.json")"
+  local variables="$(echo "$build_json" | jq ".[\"variables\"]+=$1")"
+  echo "$build_json" | jq ".+=$variables"
 }
 
 build_image() {
