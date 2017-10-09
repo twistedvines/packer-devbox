@@ -51,6 +51,10 @@
       "destination": "/home/hobag/.bash_profile"
     },
     {
+      "type": "shell",
+      "script": "./scripts/bootstrap.sh"
+    },
+    {
       "type": "file",
       "source": "./files/.xinitrc",
       "destination": "/home/{{ user `primary_username` }}/.xinitrc"

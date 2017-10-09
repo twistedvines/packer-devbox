@@ -4,6 +4,7 @@
 pacman -S --noconfirm sudo
 
 echo "%wheel      ALL=(ALL) ALL" | tee -a /etc/sudoers.d/wheel > /dev/null
+echo "hobag        ALL=NOPASSWD: ALL" | tee -a /etc/sudoers.d/hobag > /dev/null
 
 # add my user
 groupadd hobag
