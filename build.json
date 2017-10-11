@@ -84,6 +84,10 @@
     {
       "type": "shell-local",
       "command": "VBoxManage setextradata {{ user `vm_name` }} CustomVideoMode2 1920x1080x24"
+    },
+    {
+      "type": "shell",
+      "script": "./scripts/tidy-up.sh"
     }
   ],
 

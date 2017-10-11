@@ -4,7 +4,6 @@
 pacman -S --noconfirm sudo
 
 echo "%wheel      ALL=(ALL) ALL" | tee -a /etc/sudoers.d/wheel > /dev/null
-echo "hobag        ALL=NOPASSWD: ALL" | tee -a /etc/sudoers.d/hobag > /dev/null
 
 # add my user
 groupadd hobag
@@ -15,7 +14,7 @@ groupadd src
 chown -R ':src' '/usr/local/src'
 chmod 0775 '/usr/local/src'
 
-useradd -m -g hobag -G wheel,src -s /bin/bash hobag
+useradd -m -g hobag -G src,nopasswd -s /bin/bash hobag
 
 user_password="$(head /dev/urandom | tr -dc 'a-zA-Z0-9' | head -c16)"
 echo "hobag:${user_password}" | chpasswd
