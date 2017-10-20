@@ -60,11 +60,6 @@
       "destination": "/home/{{ user `primary_username` }}/.xinitrc"
     },
     {
-      "type": "file",
-      "source": "./files/i3-config",
-      "destination": "/home/{{ user `primary_username` }}/.config/i3/config"
-    },
-    {
       "type": "shell",
       "inline": "mkdir -p /etc/systemd/system/getty@tty1.service.d"
     },
