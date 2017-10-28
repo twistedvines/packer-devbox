@@ -24,9 +24,13 @@ get_opts() {
 }
 
 get_project_dir() {
-  local filepath="$(dirname $0)"
-  cd $filepath
-  pwd
+  if [[ "$0" == '-bash' ]]; then
+    pwd
+  else
+    local filepath="$(dirname $0)"
+    cd $filepath
+    pwd
+  fi
 }
 
 initialise_submodules() {
@@ -78,9 +82,19 @@ extract_base_image() {
 
 generate_dynamic_build_json() {
   local project_dir="$(get_project_dir)"
-  local build_json="$(cat "${project_dir}/build.json")"
-  local variables="$(echo "$build_json" | jq ".[\"variables\"]+=$1")"
-  echo "$build_json" | jq ".+=$variables"
+
+  local build_json="$(cat "${project_dir}/build.json" | \
+    jq ".variables = .variables * $1")"
+
+  local environment_variables="$(echo "$2" | sed -e 's/"//g')"
+
+  local env_var_array='[]'
+  for env_var in $environment_variables; do
+    env_var_array="$(echo "$env_var_array" | jq ".+ [\"$env_var\"]")"
+  done
+
+  echo "$build_json" | jq ".provisioners = [.provisioners[] |"`
+    `"select(.type == \"shell\").environment_vars = $env_var_array]"
 }
 
 build_image() {
@@ -117,28 +131,55 @@ spin_up_vagrant_box() {
   vagrant destroy -f && vagrant up
 }
 
-get_opts "$@"
-echo 'initialising submodules...'
-initialise_submodules
-exec 5>&1
-echo 'building base image...'
-BASE_BUILD_PROPERTIES="$(build_base_image | tee >(cat - >&5))"
-BASE_BUILD_PROPERTIES="$(echo "$BASE_BUILD_PROPERTIES" | jq '.')"
-echo 'extracting base image...'
-extract_base_image "$(echo "$BASE_BUILD_PROPERTIES" | jq -r '.["tarball_path"]')"
-echo 'building build json...'
-BUILD_JSON="$(generate_dynamic_build_json "$BASE_BUILD_PROPERTIES")"
-echo 'building dev box...'
-build_image "$BUILD_JSON" >(cat - >&5)
-exec 5<&-
-if [ -n "$VAGRANT_TARGET" ]; then
-  echo 'adding vagrant box...'
-  add_vagrant_box "$VAGRANT_TARGET"
+get_environment_variables() {
+  local environment=
+  [ -f "$(get_project_dir)/.env" ] && \
+    environment="$(cat "$(get_project_dir)/.env")"
 
-  if [ -n "$SPIN_UP" ]; then
-    echo 'spinning-up newly created vagrant box...'
-    spin_up_vagrant_box "$VAGRANT_TARGET"
+  [ -f "$(get_project_dir)/.env.local" ] && \
+    environment="$(printf \
+    "${environment}\n$(cat "$(get_project_dir)/.env.local")")"
+
+  local env_var_names="$(echo "$environment" | \
+    awk -F'=' '{print $1}' | sort | uniq)"
+
+  local uniq_env
+  for env_var_name in $env_var_names; do
+    uniq_env="$(printf "$uniq_env\n"`
+      `"$(printf "$environment" | grep "$env_var_name" | tail -n1)")"
+  done
+
+  echo -e "$uniq_env"
+}
+
+get_opts "$@"
+
+if [[ "$0" != '-bash' ]]; then
+  echo 'initialising submodules...'
+  initialise_submodules
+  exec 5>&1
+  echo 'building base image...'
+  BASE_BUILD_PROPERTIES="$(build_base_image | tee >(cat - >&5))"
+  BASE_BUILD_PROPERTIES="$(echo "$BASE_BUILD_PROPERTIES" | jq '.')"
+  echo 'extracting base image...'
+  extract_base_image "$(echo "$BASE_BUILD_PROPERTIES" | jq -r '.["tarball_path"]')"
+  echo 'building build json...'
+  environment_variables="$(get_environment_variables)"
+  BUILD_JSON="$(generate_dynamic_build_json \
+    "$BASE_BUILD_PROPERTIES" "$environment_variables")"
+
+  echo 'building dev box...'
+  build_image "$BUILD_JSON" >(cat - >&5)
+  exec 5<&-
+  if [ -n "$VAGRANT_TARGET" ]; then
+    echo 'adding vagrant box...'
+    add_vagrant_box "$VAGRANT_TARGET"
+
+    if [ -n "$SPIN_UP" ]; then
+      echo 'spinning-up newly created vagrant box...'
+      spin_up_vagrant_box "$VAGRANT_TARGET"
+    fi
   fi
+  echo 'tidying up...'
+  tidy_up
 fi
-echo 'tidying up...'
-tidy_up
