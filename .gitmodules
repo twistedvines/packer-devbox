@@ -1,6 +1,6 @@
 [submodule "packer-archlinux"]
 	path = packer-archlinux
 	url = git@github.com:twistedvines/packer-archlinux.git
-[submodule "scripts/arch-devbox-install"]
-	path = scripts/arch-devbox-install
+[submodule "provisioning/arch-devbox-install"]
+	path = provisioning/arch-devbox-install
 	url = git@github.com:twistedvines/arch-devbox-install.git

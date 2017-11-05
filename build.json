@@ -39,24 +39,24 @@
   "provisioners": [
     {
       "type": "shell",
-      "script": "./scripts/arch-devbox-install/install.sh"
+      "script": "./provisioning/arch-devbox-install/scripts/install.sh"
     },
     {
       "type": "shell",
-      "script": "./scripts/arch-devbox-install/setup.sh"
+      "script": "./provisioning/arch-devbox-install/scripts/setup.sh"
     },
     {
       "type": "file",
-      "source": "./files/.bash_profile",
+      "source": "./provisioning/arch-devbox-install/files/.bash_profile",
       "destination": "/home/hobag/.bash_profile"
     },
     {
       "type": "shell",
-      "script": "./scripts/arch-devbox-install/bootstrap.sh"
+      "script": "./provisioning/arch-devbox-install/scripts/bootstrap.sh"
     },
     {
       "type": "file",
-      "source": "./files/.xinitrc",
+      "source": "./provisioning/arch-devbox-install/files/.xinitrc",
       "destination": "/home/{{ user `primary_username` }}/.xinitrc"
     },
     {
@@ -65,12 +65,8 @@
     },
     {
       "type": "file",
-      "source": "./files/autologin-systemd-service.conf",
+      "source": "./provisioning/arch-devbox-install/files/autologin-systemd-service.conf",
       "destination": "/etc/systemd/system/getty@tty1.service.d/override.conf"
-    },
-    {
-      "type": "shell",
-      "inline": "chown -R {{ user `primary_username` }}: /home/{{ user `primary_username` }}"
     },
     {
       "type": "shell-local",
@@ -82,7 +78,7 @@
     },
     {
       "type": "shell",
-      "script": "./scripts/arch-devbox-install/tidy-up.sh"
+      "script": "./provisioning/arch-devbox-install/scripts/tidy-up.sh"
     }
   ],
 
