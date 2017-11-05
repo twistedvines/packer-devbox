@@ -39,11 +39,11 @@
   "provisioners": [
     {
       "type": "shell",
-      "script": "./scripts/install.sh"
+      "script": "./scripts/arch-devbox-install/install.sh"
     },
     {
       "type": "shell",
-      "script": "./scripts/setup.sh"
+      "script": "./scripts/arch-devbox-install/setup.sh"
     },
     {
       "type": "file",
@@ -52,7 +52,7 @@
     },
     {
       "type": "shell",
-      "script": "./scripts/bootstrap.sh"
+      "script": "./scripts/arch-devbox-install/bootstrap.sh"
     },
     {
       "type": "file",
@@ -82,7 +82,7 @@
     },
     {
       "type": "shell",
-      "script": "./scripts/tidy-up.sh"
+      "script": "./scripts/arch-devbox-install/tidy-up.sh"
     }
   ],
 
