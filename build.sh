@@ -35,7 +35,7 @@ get_project_dir() {
 
 initialise_submodules() {
   cd "$(get_project_dir)"
-  git submodule update --init --recursive --remote --rebase
+  git submodule update --init --recursive --remote
 }
 
 build_base_image() {
