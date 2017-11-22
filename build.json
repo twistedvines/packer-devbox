@@ -78,7 +78,7 @@
     },
     {
       "type": "shell",
-      "script": "./provisioning/arch-devbox-install/scripts/tidy-up.sh"
+      "script": "./provisioning/arch-devbox-install/scripts/tidy_up.sh"
     }
   ],
 
