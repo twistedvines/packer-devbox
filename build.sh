@@ -35,7 +35,18 @@ get_project_dir() {
 
 initialise_submodules() {
   cd "$(get_project_dir)"
-  git submodule update --init --recursive --remote
+  local submodule_result="$(git submodule update --init --recursive --remote)"
+
+  if [ -n "$submodule_result" ]; then
+    local submodules="$(cat "$(get_project_dir)/.gitmodules" | grep path \
+      | awk -F'=' '{print $NF}')"
+
+    for submodule in $submodules; do
+      git add "$submodule"
+    done
+
+    git commit -m "$(printf %b "Updated submodules\n\n$submodules")"
+  fi
 }
 
 build_base_image() {
