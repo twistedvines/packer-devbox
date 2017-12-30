@@ -53,18 +53,15 @@ build_base_image() {
   # duplicate stdout so we can see what's happening
   local project_dir="$(get_project_dir)"
   cd "$project_dir/packer-archlinux"
-  local output="$(packer build -force -machine-readable build.json | \
-    tee >(cat - | awk -F',' '{print $5}' >&5))"
+  local output="$(./build.sh -p compress | tee >(cat - >&5))"
 
   local password="$(echo "$output" | \
-    awk -F',' '{print $5}' | \
     grep 'root password for new build is' | \
     awk 'NF>1{print $NF}' | \
     xargs -0 printf "%s"
   )"
 
   local tarball_path="$(echo "$output" | \
-    awk -F',' '{print $5}' | \
     grep 'compressed artifacts in:' | \
     awk 'NF>1{print $NF}' | \
     sed "s=\.\/=$(pwd)\/=" | \
@@ -72,7 +69,6 @@ build_base_image() {
   )"
 
   local base_image_name="$(echo "$output" | \
-    awk -F',' '{print $5}' | \
     grep -oe "Executing: export [a-zA-Z0-9\-]*" | \
     awk 'NF>1 {print $NF}'
   ).ovf"
