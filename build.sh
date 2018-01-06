@@ -75,9 +75,11 @@ build_base_image() {
 
   cd "$project_dir"
 
-  echo "{\"ssh_password\": \"${password}\",
-  \"tarball_path\": \"${tarball_path}\",
-  \"base_image_name\": \"${base_image_name}\"}"
+  echo \
+    "{\"ssh_password\": \"${password}\","`
+      `"\"tarball_path\": \"${tarball_path}\","`
+      `"\"base_image_name\": \"${base_image_name}\"}" \
+    | jq '.'
 }
 
 extract_base_image() {
@@ -166,8 +168,7 @@ if [[ "$0" != '-bash' ]]; then
   initialise_submodules
   exec 5>&1
   echo 'building base image...'
-  BASE_BUILD_PROPERTIES="$(build_base_image | tee >(cat - >&5))"
-  BASE_BUILD_PROPERTIES="$(echo "$BASE_BUILD_PROPERTIES" | jq '.')"
+  BASE_BUILD_PROPERTIES="$(build_base_image)"
   echo 'extracting base image...'
   extract_base_image "$(echo "$BASE_BUILD_PROPERTIES" | jq -r '.["tarball_path"]')"
   echo 'building build json...'
